@@ -1,0 +1,58 @@
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: webapp
+    tier: frontend
+    env: qa
+  name: webapp-deploy
+  namespace: test-ns
+spec:
+  replicas: 4
+  selector:
+    matchLabels:
+      app: webapp
+    matchExpressions:
+    - key: env
+      operator: In
+      values:
+      - qa
+      - staging
+    - key: tier
+      operator: NotIn
+      values:
+      - deprecated
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: webapp
+        tier: frontend
+        env: qa
+    spec:
+      containers:
+      - image: nginx:1.23
+        name: nginx
+        resources: {}
+status: {}
+
+---
+
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    app: webapp
+    tier: frontend
+    env: dev
+  name: web-app-dev-1
+  namespace: test-ns
+spec:
+  containers:
+  - image: nginx:1.23
+    name: web-app-dev-1
+    resources: {}
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+status: {}

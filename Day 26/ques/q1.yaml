@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: nginx-deploy
+    env: test
+  name: nginx-deploy
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nginx-deploy
+    matchExpressions:
+    - key: env
+      operator: In
+      values:
+      - test
+      - dev
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: nginx-deploy
+        env: test
+    spec:
+      volumes:
+      - name: temp-dir
+        emptyDir:
+          sizeLimit: 100Mi
+          medium: Memory
+      terminationGracePeriodSeconds: 5
+      restartPolicy: Always
+      containers:
+      - image: nginx
+        name: write
+        volumeMounts:
+        - name: temp-dir
+          mountPath: /data
+        resources:
+          requests:
+            memory: 100Mi
+          limits:
+            memory: 100Mi
+      - image: busybox
+        name: read
+        volumeMounts:
+        - name: temp-dir
+          mountPath: /mnt/data
+        command:
+        - "sh"
+        - "-c"
+        - "sleep infinity"
+status: {}

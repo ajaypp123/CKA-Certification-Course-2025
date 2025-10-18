@@ -1,0 +1,118 @@
+# kubectl run test -it --rm --image=nginx -n test-ns -- bash
+# curl backend-svc:9090
+# curl backend-svc.test-ns.svc.cluster.local:9090
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: backend-deploy
+    env: test
+  name: backend-deploy
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: backend-deploy
+    matchExpressions:
+    - key: env
+      operator: In
+      values:
+      - test
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: backend-deploy
+        env: test
+    spec:
+      containers:
+      - image: nginx
+        name: nginx-c
+      - image: hashicorp/http-echo
+        name: http-echo
+        ports:
+        - containerPort: 5678
+        args:
+        - "-text=Hello"
+        - "-listen=:5678"
+        resources: {}
+status: {}
+
+---
+
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-svc
+  namespace: test-ns
+spec:
+  ports:
+  - port: 9090
+    protocol: TCP
+    targetPort: 5678
+  selector:
+    app: backend-deploy
+    env: test
+  type: ClusterIP
+status:
+  loadBalancer: {}
+
+---
+
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-np-svc
+spec:
+  ports:
+  - port: 8080
+    protocol: TCP
+    targetPort: 5678
+    nodePort: 31100
+  selector:
+    app: backend-deploy
+    env: test
+  type: NodePort
+status:
+  loadBalancer: {}
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: backend-deploy
+    env: test
+  name: backend-lb-svc
+spec:
+  loadBalancerIP: 192.168.1.246
+  ports:
+  - port: 3000
+    protocol: TCP
+    targetPort: 5678
+  selector:
+    app: backend-deploy
+    env: test
+  type: LoadBalancer
+status:
+  loadBalancer: {}
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: backend-hello-ref-svc
+  name: backend-hello-ref-svc
+spec:
+  externalName: backend-hello-svc.default.svc.cluster.local
+  type: ExternalName
+status:
+  loadBalancer: {}
+
+---
+

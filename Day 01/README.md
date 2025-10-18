@@ -138,11 +138,9 @@ Now, let’s break down this analogy further:
 - **REST API:** Translates CLI commands (e.g., `docker run`) into HTTP requests for the Docker Daemon. This enables automation and integration with external tools.
 - **Docker Daemon:** The “engine” that handles pulling images, building containers, and other core functions.
 
+![Alt text](/images/1f.jpg)
 
-### **Using the Car Analogy**
-- **Docker CLI:** Like the **dashboard** of a car, where you interact with buttons and controls.  
-- **REST API:** Like the **wires**, transmitting instructions from the dashboard to the engine.  
-- **Docker Daemon:** Like the **engine**, performing tasks such as pulling images and running containers.
+### **Docker Engine**
 
 ![Alt text](/images/1e.png)
 

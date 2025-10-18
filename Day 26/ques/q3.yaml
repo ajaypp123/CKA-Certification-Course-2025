@@ -1,0 +1,93 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: env-demo-deploy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: env-demo
+  template:
+    metadata:
+      labels:
+        app: env-demo
+    spec:
+      containers:
+      - name: env-demo
+        image: nginx:latest
+        resources:
+          requests:
+            cpu: "200m"
+            memory: "128Mi"
+          limits:
+            cpu: "500m"
+            memory: "256Mi"
+        env:
+          # 1️⃣ Static key-value
+          - name: APP_MODE
+            value: "production"
+
+          # 2️⃣ From ConfigMap (single key)
+          - name: CONFIG_VALUE
+            valueFrom:
+              configMapKeyRef:
+                name: app-config
+                key: app-mode
+
+          # 3️⃣ From Secret (single key)
+          - name: DB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: db-secret
+                key: password
+
+          # 4️⃣ From Pod metadata (Downward API)
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+          - name: POD_IP
+            valueFrom:
+              fieldRef:
+                fieldPath: status.podIP
+
+          # 5️⃣ From Resource fields (Downward API)
+          - name: CPU_LIMIT
+            valueFrom:
+              resourceFieldRef:
+                containerName: env-demo
+                resource: limits.cpu
+          - name: MEM_REQUEST
+            valueFrom:
+              resourceFieldRef:
+                containerName: env-demo
+                resource: requests.memory
+
+        # 6️⃣ Inject all keys from ConfigMap and Secret
+        envFrom:
+          - configMapRef:
+              name: app-config
+          - secretRef:
+              name: db-secret
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+data:
+  app-mode: "debug"
+  log-level: "info"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: db-secret
+type: Opaque
+stringData:
+  username: "admin"
+  password: "mypassword123"
+---

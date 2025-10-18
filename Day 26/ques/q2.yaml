@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    run: nginx-pod
+  name: nginx-pod
+spec:
+  volumes:
+  - name: temp-dir
+    emptyDir:
+      sizeLimit: 20Mi
+      medium: Memory
+  containers:
+  - image: nginx
+    name: nginx-pod
+    resources: {}
+    volumeMounts:
+    - name: temp-dir
+      mountPath: /data1
+  - image: busybox
+    name: pod2
+    command:
+    - sh
+    - -c
+    - sleep infinity
+    volumeMounts:
+    - name: temp-dir
+      mountPath: /data2
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+status: {}

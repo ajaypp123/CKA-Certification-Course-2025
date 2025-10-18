@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  labels:
+    app: busybox-ds
+  name: busybox-ds
+spec:
+  selector:
+    matchLabels:
+      app: busybox-ds
+  template:
+    metadata:
+      labels:
+        app: busybox-ds
+    spec:
+      tolerations:
+      - key: node-role.kubernetes.io/control-plane
+        operator: Exists
+        effect: NoSchedule
+      containers:
+      - image: busybox
+        name: busybox
+        command: ["sh", "-c", "sleep infinity"]
+        resources: {}
+

@@ -48,6 +48,8 @@ Kubernetes operates on a master-worker architecture, where:
 
 1. **etcd**  
    - A distributed key-value store that stores all the cluster's configuration data.
+   - It supports HTTP-based operations (e.g., via curl) and provides efficient watch queries for real-time updates.
+   - backups using the etcdctl command (e.g., snapshot save and snapshot restore) are essential before performing upgrades or maintenance.
 
 2. **API Server**  
    - The front-end for the Kubernetes control plane.  
@@ -55,6 +57,7 @@ Kubernetes operates on a master-worker architecture, where:
 
 3. **Scheduler**  
    - Assigns Pods to worker nodes based on resource availability and other constraints.
+   - It evaluates factors such as resource availability (e.g., CPU, memory, or storage volumes), node labels, taints and tolerations, and quota restrictions to assign Pods to nodes.
 
 4. **Controller Manager**  
    - Implements control loops that ensure the desired state of the cluster is maintained.  
@@ -68,7 +71,7 @@ Kubernetes operates on a master-worker architecture, where:
 
 1. **Kubelet**  
    - An agent that runs on each worker node.  
-   - Communicates with the control plane and ensures that containers are running as expected.
+   - The kubelet is a critical agent running on every node, responsible for managing the lifecycle of containers. 
 
 2. **Kube-proxy**  
    - A network proxy that runs on each worker node.  
@@ -87,6 +90,17 @@ Kubernetes operates on a master-worker architecture, where:
 | **Focus**          | Orchestration, management, and control               | Running applications and managing resources |
 
 ---
+
+## **Operators**
+
+![Alt text](/images/7g.jpg)
+
+1. **Introduction**
+   * In Kubernetes, `operators`, also known as controllers or watch loops, automate the lifecycle management of resources by continuously monitoring changes in the cluster and reconciling the current state with the intended configuration.
+   * Kubernetes includes many built-in operators for core resources such as Deployments, Namespaces, and Services. 
+
+2. **Service Operators**
+   * A Service in Kubernetes acts as an operator that listens to the Endpoint operator and ensures that applications can communicate with one another reliably, regardless of the transient nature of the underlying Pods.
 
 ## **Kubernetes: Python Frontend, Redis Service, kube-proxy, and CNI Interaction**
 

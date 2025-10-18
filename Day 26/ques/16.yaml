@@ -1,0 +1,35 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    run: pod
+  name: pod
+spec:
+  containers:
+  - image: nginx
+    name: pod
+    resources:
+      limits:
+        memory: 100Mi
+      requests:
+        memory: 50Mi
+    env:
+    - name: ENV
+      value: "production"
+    - name: NAMESPACE_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.namespace
+    - name: MEMORY_R
+      valueFrom:
+        resourceFieldRef:
+          containerName: pod
+          resource: requests.memory
+    - name: MEMORY_S
+      valueFrom:
+        resourceFieldRef:
+          containerName: pod
+          resource: limits.memory
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+status: {}

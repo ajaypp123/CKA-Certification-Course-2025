@@ -1,0 +1,104 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: nginx-deploy
+  name: nginx-deploy
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nginx-deploy
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: nginx-deploy
+    spec:
+      volumes:
+      - name: nginx-conf
+        configMap:
+          name: nginx-cm
+      - name: nginx-secret
+        secret:
+          secretName: nginx-sc
+      containers:
+      - image: nginx
+        name: nginx
+        env:
+        - name: PROD
+          valueFrom:
+            configMapKeyRef:
+              name: nginx-cm
+              key: APP
+        - name: ENV
+          valueFrom:
+            configMapKeyRef:
+              name: nginx-cm
+              key: ENV
+        - name: PROD_SC
+          valueFrom:
+            secretKeyRef:
+              name: nginx-sc
+              key: APP 
+        resources: {}
+        volumeMounts:
+        - name: nginx-conf
+          mountPath: /usr/share/nginx/html/index.html
+          subPath: index.html
+        - name: nginx-secret
+          mountPath: /data
+status: {}
+
+---
+
+apiVersion: v1
+data:
+  APP: BACKEND
+  ENV: DEV
+  index.html: |2
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Welcome</title>
+        </head>
+        <body>
+            <h1>This page is served by nginx. Welcome to Cloud With VarJosh!!</h1>
+            <h2>The dark side of the moon!!</h2>
+            <h3>The dark side of the moon-2!!</h3>
+        </body>
+        </html>
+kind: ConfigMap
+metadata:
+  name: nginx-cm
+
+---
+
+
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: nginx-deploy
+  name: nginx-svc
+spec:
+  ports:
+  - port: 8080
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: nginx-deploy
+  type: ClusterIP
+status:
+  loadBalancer: {}
+
+---
+
+
+apiVersion: v1
+data:
+  APP: UFJPRA==
+  cm_data.json: ewogICJ0ZXN0IjogImNtIgp9Cg==
+kind: Secret
+metadata:
+  name: nginx-sc

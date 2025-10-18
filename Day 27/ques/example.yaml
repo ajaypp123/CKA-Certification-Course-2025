@@ -1,0 +1,55 @@
+# pvc method does not guarantee any binding privileges to the PersistentVolume. Specify the relevant PersistentVolumeClaim in the claimRef field of the PV so that other PVCs can not bind to it.
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: foo-pv
+spec:
+  storageClassName: ""
+  claimRef:
+    name: foo-pvc
+    namespace: foo
+...
+# PersistentVolumeClaim example with selector using matchLabels and matchExpressions 
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: myclaim
+spec:
+  accessModes:
+    - ReadWriteOnce
+  volumeMode: Filesystem
+  resources:
+    requests:
+      storage: 8Gi
+  storageClassName: slow
+  selector:
+    matchLabels:
+      release: "stable"
+    matchExpressions:
+      - {key: environment, operator: In, values: [dev]}
+---
+# In Kubernetes, subPath is used to mount only a specific folder or file from a volume into a container — instead of mounting the entire volume.
+
+# /data/site-data/
+# ├── html/
+# │   ├── index.html
+# │   └── style.css
+# └── logs/
+#     └── app.log
+
+volumes:
+- name: site-data
+  hostPath:
+    path: /data/site-data
+
+volumeMounts:
+  - mountPath: /var/www/html
+    name: site-data
+    subPath: html
+  # Mount only the "logs" subdirectory
+  - name: site-data
+    mountPath: /var/log/nginx
+    subPath: logs
+
+# Mounts only /data/site-data/html into /var/www/html inside the Nginx container.
+---

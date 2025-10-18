@@ -1,0 +1,210 @@
+Excellent — now we’ll take all those **Day 14–21 Kubernetes topics** and blend them into a **final exam simulation** — just like the **real CKA**:
+
+* Multi-topic, scenario-based
+* No chapter/day divisions
+* Each question **tests multiple concepts** (namespaces, scheduling, taints, affinity, quotas, autoscaling, multi-container pods, etc.)
+* Every task is independent (no dependency on previous answers)
+* Includes **objectives**, **time hints**, and **verification criteria**
+
+---
+
+# 🧠 **CKA Final Practice Exam (Days 14–21 Combined Topics)**
+
+**Cluster Context:**
+You are working in a Kubernetes cluster with multiple nodes:
+
+* `controlplane`
+* `node01`
+* `node02`
+
+You have full `kubectl` and `root` access.
+
+---
+
+### **Question 1 — Namespace and Context Configuration (5 min)**
+
+Create a new namespace called `finance-team`.
+Deploy a pod named `fin-app` in this namespace using image `nginx:latest`.
+
+Then configure your current `kubectl` context so all future commands **default** to this namespace.
+Verify that `kubectl get pods` lists the `fin-app` pod **without** needing `-n finance-team`.
+
+---
+
+### **Question 2 — Resource Management (6 min)**
+
+In the `finance-team` namespace:
+
+1. Create a **LimitRange** named `default-limits` that ensures all containers request at least:
+
+   * 100m CPU
+   * 128Mi memory
+     and cannot exceed:
+   * 500m CPU
+   * 512Mi memory
+2. Create a **ResourceQuota** named `compute-quota` that limits total namespace usage to:
+
+   * 1 CPU
+   * 1Gi memory
+
+Verify that attempting to deploy a pod requesting 2 CPUs **fails**.
+
+---
+
+### **Question 3 — Manual Scheduling (4 min)**
+
+Create a pod named `manual-pod` using image `nginx` that runs **only on node01**.
+Do not use labels, selectors, or affinity — use the **spec.nodeName** field.
+
+Verify its placement using:
+`kubectl get pods -o wide`
+
+---
+
+### **Question 4 — Static Pod Verification (5 min)**
+
+The node `controlplane` should automatically run a **static pod** named `static-check` using image `busybox` that runs `sleep 1000`.
+
+The static pod manifest file should be placed in the correct kubelet manifest directory.
+Verify that deleting the pod via `kubectl delete pod static-check -n kube-system` causes it to **recreate automatically**.
+
+---
+
+### **Question 5 — Taints and Tolerations (6 min)**
+
+1. Taint node `node02` with key `dedicated=analytics:NoSchedule`.
+2. Create a pod named `analytics-pod` (image: `nginx`) that tolerates this taint.
+3. Ensure it runs **only** on `node02`.
+
+Verify using:
+
+```bash
+kubectl describe pod analytics-pod | grep Node:
+```
+
+---
+
+### **Question 6 — Node Affinity and Labeling (6 min)**
+
+1. Label node `node01` with `env=dev`.
+2. Create a pod `dev-pod` that runs on nodes with label `env=dev` using **required node affinity**.
+
+Once created, **modify** the same pod YAML to make it prefer (`preferredDuringSchedulingIgnoredDuringExecution`) nodes with `env=dev` rather than strictly requiring it.
+
+---
+
+### **Question 7 — Combined Scheduling Control (7 min)**
+
+You have a node `node02` labeled `tier=backend` and tainted with `tier=backend:NoSchedule`.
+Create a pod named `backend-app` using image `nginx` that:
+
+* Has **nodeAffinity** for nodes labeled `tier=backend`
+* Has a **toleration** for taint `tier=backend:NoSchedule`
+
+Verify that the pod successfully schedules to `node02`.
+
+---
+
+### **Question 8 — Requests, Limits, and Performance (5 min)**
+
+Create a pod named `perf-pod` in namespace `finance-team` with:
+
+* image: `nginx`
+* CPU request: 200m, limit: 400m
+* Memory request: 256Mi, limit: 512Mi
+
+Once running, use `kubectl top pod perf-pod` to confirm its resource usage.
+If the metrics server is missing, explain how you would install and verify it.
+
+---
+
+### **Question 9 — Autoscaling (7 min)**
+
+Create a deployment named `scale-app` (image: `nginx`, replicas: 1).
+Create a Horizontal Pod Autoscaler (HPA) for it:
+
+* Min replicas: 1
+* Max replicas: 5
+* Target CPU utilization: 60%
+
+Explain how you would **generate load** to trigger scaling and verify the new replica count.
+Also describe how **Vertical Pod Autoscaler** differs from HPA.
+
+---
+
+### **Question 10 — Multi-Container Pod (8 min)**
+
+Create a pod named `multi-pod` that demonstrates **init**, **sidecar**, and **main** container usage:
+
+* Init container: `busybox`, runs `echo Init completed`
+* Main container: `nginx`
+* Sidecar container: `busybox` continuously tails `/var/log/nginx/access.log`
+
+Both containers should share a common `emptyDir` volume mounted at `/var/log/nginx`.
+Verify that the init container runs to completion **before** the main and sidecar containers start.
+
+---
+
+### **Question 11 — Pod Isolation (Network and Namespace) (5 min)**
+
+1. Create two namespaces: `team-a` and `team-b`.
+2. Deploy a simple `nginx` pod in each.
+3. Verify that by default, both pods **can communicate** across namespaces.
+4. Describe how you would isolate them using a **NetworkPolicy** (no need to apply YAML).
+
+---
+
+### **Question 12 — Default Namespace Behavior (3 min)**
+
+Explain what happens if you deploy a pod **without specifying a namespace** and without setting a default namespace in your context.
+Then show the command to view all pods across **all namespaces**.
+
+> ✅ Expected command:
+> `kubectl get pods -A`
+
+---
+
+### **Question 13 — Mirror Pod Concept (3 min)**
+
+A pod named `static-web` appears in `kube-system`, but no manifest or deployment is visible via API.
+Explain what this indicates and how to verify its static manifest on the node.
+
+> ✅ Hint: Mirror pod of a static pod in `/etc/kubernetes/manifests/`
+
+---
+
+### **Question 14 — Node Affinity and Resource Quota Conflict (6 min)**
+
+Create a namespace `dev-quota`.
+Set a quota limiting total CPU to 1 and memory to 1Gi.
+Then deploy a pod requiring 2 CPUs with affinity to nodes labeled `env=dev`.
+Explain what prevents scheduling — the **affinity rule** or the **quota** — and how you confirm the exact reason using `kubectl describe pod`.
+
+---
+
+### **Question 15 — Scenario Mix (10 min)**
+
+You are asked to prepare an environment for an analytics workload:
+
+1. Create namespace `analytics`.
+2. Label node `node02` with `team=analytics` and taint it `team=analytics:NoSchedule`.
+3. Create a LimitRange to restrict each container to a max of `1 CPU` and `1Gi` memory.
+4. Create a pod `analytics-engine` that:
+
+   * Tolerates the taint
+   * Has affinity for nodes labeled `team=analytics`
+   * Requests 500m CPU and 512Mi memory
+   * Uses image `nginx`
+
+Verify that the pod schedules to `node02` successfully.
+
+---
+
+✅ **Total Questions:** 15
+🕒 **Suggested Duration:** 90–100 minutes
+🎯 **Skill Coverage:** Namespaces | Scheduling | Static Pods | Taints | Affinity | Resource Quota | LimitRange | Autoscaling | Multi-Container Pods | Context Management | Mirror Pods
+
+---
+
+Would you like me to convert this into a **mock exam PDF (with space for YAML + command answers)** — formatted like the real CKA exam environment (with one question per page and reference area)?
+

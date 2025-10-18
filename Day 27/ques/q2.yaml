@@ -1,0 +1,87 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: backend-deploy
+    env: test
+    setup: gpu
+  annotations:
+    kubernetes.io/change-cause: "Test volume env"
+    version: "1.0"
+  name: backend-deploy
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: backend-deploy
+    matchExpressions:
+    - key: setup
+      operator: In
+      values:
+      - gpu
+      - nogpu
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: backend-deploy
+        env: test
+        setup: gpu
+      annotations:
+        kubernetes.io/change-cause: "Test volume env"
+        version: "1.0"
+    spec:
+      volumes:
+      - name: temp-vol
+        emptyDir:
+          sizeLimit: 100Mi
+          medium: Memory
+      - name: host-vol
+        hostPath:
+          path: /tmp
+          type: Directory
+      - name: downward-vol
+        downwardAPI:
+          items:
+          - path: "labels"
+            fieldRef:
+              fieldPath: metadata.labels
+          - path: "annotations"
+            fieldRef:
+              fieldPath: metadata.annotations
+      containers:
+      - image: nginx
+        name: nginx
+        env:
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: MEM_REQS
+          valueFrom:
+            resourceFieldRef:
+              containerName: nginx
+              resource: requests.memory
+        - name: MEM_LIMIT
+          valueFrom:
+            resourceFieldRef:
+              containerName: nginx
+              resource: limits.memory
+        volumeMounts:
+        - name: temp-vol
+          mountPath: /data1
+        - name: host-vol
+          mountPath: /data2
+        - name: downward-vol
+          mountPath: /data3
+        resources:
+          requests:
+            memory: 100Mi
+          limits:
+            memory: 200Mi
+
+

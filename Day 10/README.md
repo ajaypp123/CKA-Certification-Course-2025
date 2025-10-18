@@ -134,8 +134,10 @@ spec:
    kubectl scale rc nginx-rc --replicas=4
    ```
 
-
-
+4. **Update image:**
+```sh
+kubectl set image replicationcontrollers my-deployment nginx=nginx:1.22 --dry-run=client -oyaml
+```
 
 ### **Imperative Way to Create an rc (deprecated)**
 ```bash
@@ -257,6 +259,14 @@ spec:
         - name: nginx-container
           image: nginx
 ```
+
+### Note:
+When you create a Deployment, Kubernetes sets up a ReplicaSet to manage Pods that match the Deployment’s selector.
+That selector determines which Pods the Deployment controls.
+
+If you later change the selector (for example, by adding matchExpressions), the Deployment could point to a different set of Pods — which Kubernetes forbids to prevent accidental takeovers.
+
+Always delete old object if there is change in labels.
 
 ### Explanation:
 1. **`.selector.matchExpressions`**: Defines the rules for selecting pods:

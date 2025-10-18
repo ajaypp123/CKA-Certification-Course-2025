@@ -1,0 +1,158 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kubernetes.io/change-cause: "All deployment"
+  labels:
+    app: test-deploy
+    env: test
+  name: test-deploy
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: test-deploy
+    matchExpressions:
+    - key: env
+      operator: In
+      values:
+      - test
+      - dev
+  strategy:
+    rollingUpdate:
+      maxSurge: 70%
+      maxUnavailable: 70%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: test-deploy
+        env: test
+    spec:
+      tolerations:
+      - key: env
+        operator: Equal
+        value: gpu
+        effect: NoExecute
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 10
+      containers:
+      - image: registry.k8s.io/goproxy:0.1
+        name: tcp-check
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8080
+        livenessProbe:
+          tcpSocket:
+            port: 8080
+          initialDelaySeconds: 3
+          periodSeconds: 10
+          successThreshold: 1
+          failureThreshold: 2
+          timeoutSeconds: 12
+      - image: busybox
+        name: busybox
+        imagePullPolicy: IfNotPresent
+        command:
+        - "sh"
+        - "-c"
+        - "touch /tmp/data; sleep infinity;"
+        resources:
+          requests:
+            cpu: 100m
+            memory: 100Mi
+          limits:
+            cpu: 100m
+            memory: 100Mi
+        startupProbe:
+          exec:
+            command:
+            - cat
+            - /tmp/data
+          initialDelaySeconds: 3
+          periodSeconds: 10
+          successThreshold: 1
+          failureThreshold: 2
+          timeoutSeconds: 12
+      - image: hashicorp/http-echo
+        name: server
+        imagePullPolicy: IfNotPresent
+        args:
+        - "-text=Hello"
+        - "-listen=:5678"
+        resources:
+          requests:
+            cpu: 100m
+            memory: 100Mi
+          limits:
+            cpu: 100m
+            memory: 100Mi
+        ports:
+        - containerPort: 5678
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 5678
+            httpHeaders:
+            - name: Custom-Header
+              value: Awesome
+          initialDelaySeconds: 3
+          periodSeconds: 10
+          successThreshold: 1
+          failureThreshold: 2
+status: {}
+
+---
+
+
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: test-deploy
+    env: test
+  name: test-svc
+spec:
+  ports:
+  - port: 8080
+    protocol: TCP
+    targetPort: 5678
+  selector:
+    env: test
+  type: ClusterIP
+status:
+  loadBalancer: {}
+
+---
+
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: test-deploy
+spec:
+  maxReplicas: 4
+  metrics:
+  - resource:
+      name: cpu
+      target:
+        averageUtilization: 70
+        type: Utilization
+    type: Resource
+  - resource:
+      name: memory
+      target:
+        averageUtilization: 70
+        type: Utilization
+    type: Resource
+  minReplicas: 2
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: test-deploy
+status:
+  currentMetrics: null
+  desiredReplicas: 0
+
+---
+
+

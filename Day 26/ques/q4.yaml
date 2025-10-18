@@ -1,0 +1,55 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    run: nginx-pod
+    app: test
+  name: nginx-pod
+spec:
+  volumes:
+  - name: temp-dir
+    emptyDir:
+      sizeLimit: 20Mi
+      medium: Memory
+  - name: pod-info-vol
+    downwardAPI:
+      items:
+      - path: "labels"
+        fieldRef:
+          fieldPath: metadata.labels
+      - path: "annotations"
+        fieldRef:
+          fieldPath: metadata.annotations
+  containers:
+  - image: nginx
+    name: nginx-pod
+    resources:
+      limits:
+        memory: 100Mi
+    env:
+    - name: POD_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.name
+    - name: POD_MEMORY
+      valueFrom:
+        resourceFieldRef:
+          containerName: nginx-pod
+          resource: limits.memory
+    volumeMounts:
+    - name: temp-dir
+      mountPath: /data1
+    - name: pod-info-vol
+      mountPath: /etc/podinfo
+  - image: busybox
+    name: pod2
+    command:
+    - sh
+    - -c
+    - sleep infinity
+    volumeMounts:
+    - name: temp-dir
+      mountPath: /data2
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+status: {}

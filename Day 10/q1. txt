@@ -1,0 +1,77 @@
+You are asked to create a Deployment in namespace test-ns that runs a simple nginx application, and you must practice using equality-based and set-based selectors. The requirements:
+
+Ensure namespace test-ns exists (create if needed).
+
+1. Create a Deployment named webapp-deploy with 4 replicas, using image nginx:1.23.
+
+2. The pods created by this Deployment should have these labels:
+
+app=webapp
+tier=frontend
+env=qa
+
+3. The Deployment’s selector must use a mixed approach:
+
+Use equality-based selector (via matchLabels) for app=webapp
+
+Use set-based selector (via matchExpressions) to require that env is in (qa, staging)
+i.e., env in (qa, staging)
+
+Use set-based selector also to exclude any pods whose tier is deprecated (i.e. tier notin (deprecated))
+
+4. After applying the Deployment, verify that the selector is correctly set (in the deployed spec). Use kubectl to show that the .spec.selector includes both the matchLabels and matchExpressions.
+
+```yml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: webapp
+    tier: frontend
+    env: qa
+  name: webapp-deploy
+  namespace: test-ns
+spec:
+  replicas: 4
+  selector:
+    matchLabels:
+      app: webapp
+    matchExpressions:
+    - key: env
+      operator: In
+      values:
+      - qa
+      - staging
+    - key: tier
+      operator: NotIn
+      values:
+      - deprecated
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: webapp
+        tier: frontend
+        env: qa
+    spec:
+      containers:
+      - image: nginx:1.23
+        name: nginx
+        resources: {}
+status: {}
+```
+
+5. Add an additional pod manually (outside this Deployment) in test-ns with labels:
+
+app=webapp
+
+tier=frontend
+
+env=dev
+
+Will this manual pod be “adopted” (managed) by your Deployment? Explain why or why not.
+
+6. Change the Deployment’s template (rolling update) so that nginx:1.24 is used, but only for pods where env=qa (i.e. you don’t want pods with env=staging to be touched). Show how you would patch or edit the Deployment spec so that only eligible pods are updated (respecting your selector). Also explain what happens to pods with env=staging.
+
+7. (Edge case) Someone adds a label env=staging to a pod already created under this Deployment (so the pod’s labels now become env=staging). What would be the behavior of the Deployment / ReplicaSet controller with respect to that pod, given your selector? Will it keep it running, delete it, re-create it, or ignore it? Why?
+

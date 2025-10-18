@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    run: manual-pod
+  name: manual-pod
+spec:
+  nodeName: cka-cluster-worker 
+  containers:
+  - image: nginx
+    name: manual-pod
+    resources: {}

@@ -18,10 +18,13 @@ There are two fundamental approaches to system configuration:
       - **Kubernetes**: `kubectl run my-pod --image=nginx`
         - This command directly creates a Pod with the specified image. It doesn't define the desired state, but rather instructs Kubernetes to perform a specific action.
       - **General:** Copy file A to location B, then execute command C.
+      - Used for testing and quick build.
+
   2. **Declarative**: Describes the **desired state** of the system. The system figures out how to reach that state. **Examples** below: 
       - **Kubernetes**: Create a YAML file defining the Pod specification (e.g., `pod.yaml`) and then apply it using `kubectl apply -f pod.yaml`.
         - This approach describes the desired state of the Pod (its name, image, resources, etc.) in a YAML file. Kubernetes then reconciles the actual state of the system with the desired state defined in the YAML.
       - **General:** Ensure file A exists at location B with specific permissions.
+      - For production grade to maintain idempotency.
 
 **Why Declarative is Preferred in Kubernetes**:
   - **Idempotency**: Applying the same declarative configuration repeatedly yields the same result.
@@ -318,7 +321,34 @@ These terms all refer to the same concept of defining and managing Kubernetes re
 - Execute a command in a Pod: `kubectl exec -it <pod-name> -- /bin/bash`
 - Execute a command in a specific container: `kubectl exec -it <pod-name> -c <container-name> -- /bin/bash`  
 - Delete a Pod: `kubectl delete pod <pod-name>`  
-  
 
+### Inspect pod
 
+- **inspect pod**
 
+```bash
+kubectl get pod my-pod -o yaml
+
+kubectl get pod my-pod -o jsonpath={.spec.containers[]}
+kubectl get pod my-pod -o jsonpath={.spec.containers[].name}
+
+kubectl get pod my-pod -o jsonpath={.spec.containers[0]}
+kubectl get pod my-pod -o jsonpath={.spec.containers[0].name}
+```
+
+- **pod shell**
+```bash
+kubectl exec -h
+kubectl exec  pod/my-pod -it -- date
+kubectl exec  pod/my-pod -it -- /bin/bash
+```
+
+### Run Pod
+
+- use `kubectl run` in cka exam
+
+```bash
+kubectl run -h
+
+kubectl run pod my-nginx-pod --image=nginx:latest --labels="app=nginx,myenv=dev" --port=443 --port=80 --dry-run=client -o yaml
+```

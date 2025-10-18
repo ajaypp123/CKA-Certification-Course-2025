@@ -1,0 +1,37 @@
+# Workload from project A and with gpu support
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: nginx-deploy
+  name: nginx-deploy
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx-deploy
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: nginx-deploy
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: project
+                operator: In
+                values:
+                - A
+      tolerations:
+      - key: "env"
+        value: "gpu"
+        operator: "Equal"
+        effect: "NoExecute"
+      containers:
+      - image: nginx
+        name: nginx
+        resources: {}
+status: {}

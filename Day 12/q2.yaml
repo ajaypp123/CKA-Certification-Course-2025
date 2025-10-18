@@ -1,0 +1,60 @@
+# Expose in default
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: backend-deploy
+    env: test
+  name: backend-deploy
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: backend-deploy
+    matchExpressions:
+    - key: env
+      operator: In
+      values:
+      - test
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: backend-deploy
+        env: test
+    spec:
+      containers:
+      - image: nginx
+        name: nginx-c
+      - image: hashicorp/http-echo
+        name: http-echo
+        ports:
+        - containerPort: 5678
+        args:
+        - "-text=Hello"
+        - "-listen=:5678"
+        resources: {}
+status: {}
+
+---
+
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-hello-svc
+spec:
+  ports:
+  - port: 9090
+    protocol: TCP
+    targetPort: 5678
+  selector:
+    app: backend-deploy
+    env: test
+  type: ClusterIP
+status:
+  loadBalancer: {}
+
+---
+
