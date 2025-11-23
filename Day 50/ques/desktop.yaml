@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: desktop-deploy
+  name: desktop-deploy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: desktop-deploy
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: desktop-deploy
+    spec:
+      containers:
+      - image: nginx
+        name: nginx
+        resources: {}
+status: {}
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: desktop-deploy
+  name: desktop-svc
+  namespace: web
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: desktop-deploy
+  type: ClusterIP
+status:
+  loadBalancer: {}

@@ -1,0 +1,55 @@
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: myapp
+    role: frontend
+  name: frontend-deploy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: myapp
+      role: frontend
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: myapp
+        role: frontend
+    spec:
+      containers:
+      - image: nginx
+        name: nginx
+        ports:
+        - containerPort: 80
+        resources: {}
+status: {}
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: myapp
+    role: frontend
+  name: frontend-svc
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 80
+    nodePort: 31200
+  selector:
+    app: myapp
+    role: frontend
+  type: NodePort
+status:
+  loadBalancer: {}
+
+---
+
+

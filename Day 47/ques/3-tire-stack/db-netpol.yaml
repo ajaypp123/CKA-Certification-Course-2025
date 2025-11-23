@@ -1,0 +1,24 @@
+# for db allow incomming traffic to 3306 port and block all outgoing traffic
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: db-netpol
+spec:
+  podSelector:
+    matchLabels:
+      role: db
+      app: myapp
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          role: backend
+          app: myapp
+    ports:
+    - protocol: TCP
+      port: 3306
+

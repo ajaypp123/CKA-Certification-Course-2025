@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: iphone-deploy
+  name: iphone-deploy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: iphone-deploy
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: iphone-deploy
+    spec:
+      containers:
+      - image: nginx
+        name: nginx
+        resources: {}
+status: {}
+
+---
+
+
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: iphone-deploy
+  name: iphone-svc
+  namespace: apps
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: iphone-deploy
+  type: ClusterIP
+status:
+  loadBalancer: {}

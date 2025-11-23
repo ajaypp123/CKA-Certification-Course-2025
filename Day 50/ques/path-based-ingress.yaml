@@ -1,0 +1,28 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: web-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  ingressClassName: nginx
+  rules:
+  - http:
+      paths:
+      - path: /iphone
+        pathType: Prefix
+        backend:
+          service:
+            name: iphone-svc
+            port:
+              number: 80
+  - http:
+      paths:
+      - path: /desktop
+        pathType: Prefix
+        backend:
+          service:
+            name: desktop-svc
+            port:
+              number: 80
+

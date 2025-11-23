@@ -1,0 +1,31 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-demo1
+  namespace: app1-ns
+spec:
+  #ingressClassName: alb
+  rules:
+    - http:
+        paths:
+          - path: /iphone
+            pathType: Prefix # https://kubernetes.io/docs/concepts/services-networking/ingress/#path-types
+            backend:
+              service:
+                name: iphone-svc
+                port:
+                  number: 80
+          - path: /android
+            pathType: Prefix
+            backend:
+              service:
+                name: android-svc
+                port:
+                  number: 80
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: desktop-svc
+                port:
+                  number: 80

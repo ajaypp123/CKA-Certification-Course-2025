@@ -1,0 +1,49 @@
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-svc
+  labels:
+    app: mydb
+    role: db
+spec:
+  ports:
+  - port: 3306
+    name: mysql
+  clusterIP: None
+  selector:
+    app: mydb
+    role: db
+
+---
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mysql-db
+spec:
+  selector:
+    matchLabels:
+      app: mydb
+      role: db
+  serviceName: "mysql-svc"
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: mydb
+        role: db
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+      - name: mysql
+        image: mysql:latest
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: "password123"
+        ports:
+        - containerPort: 3306
+          name: mysql
+
+---
+

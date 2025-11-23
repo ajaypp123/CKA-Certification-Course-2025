@@ -1,0 +1,44 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: GatewayClass
+metadata:
+  annotations:
+    meta.helm.sh/release-name: ngf
+    meta.helm.sh/release-namespace: ngf-gatewayapi-ns
+  creationTimestamp: "2025-11-19T13:33:24Z"
+  generation: 1
+  labels:
+    app.kubernetes.io/instance: ngf
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: nginx-gateway-fabric
+    app.kubernetes.io/version: 2.2.1
+    helm.sh/chart: nginx-gateway-fabric-2.2.1
+  name: nginx
+  resourceVersion: "628"
+  uid: 99393f58-4778-4dd7-b7fd-8b4e7dae182d
+spec:
+  controllerName: gateway.nginx.org/nginx-gateway-controller
+  parametersRef:
+    group: gateway.nginx.org
+    kind: NginxProxy
+    name: ngf-proxy-config
+    namespace: ngf-gatewayapi-ns
+status:
+  conditions:
+  - lastTransitionTime: "2025-11-19T13:33:25Z"
+    message: GatewayClass is accepted
+    observedGeneration: 1
+    reason: Accepted
+    status: "True"
+    type: Accepted
+  - lastTransitionTime: "2025-11-19T13:33:25Z"
+    message: Gateway API CRD versions are supported
+    observedGeneration: 1
+    reason: SupportedVersion
+    status: "True"
+    type: SupportedVersion
+  - lastTransitionTime: "2025-11-19T13:33:25Z"
+    message: ParametersRef resource is resolved
+    observedGeneration: 1
+    reason: ResolvedRefs
+    status: "True"
+    type: ResolvedRefs

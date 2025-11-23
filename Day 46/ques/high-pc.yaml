@@ -1,0 +1,9 @@
+apiVersion: scheduling.k8s.io/v1
+description: high priority class
+kind: PriorityClass
+metadata:
+  name: high-pc
+preemptionPolicy: PreemptLowerPriority
+value: 1000
+globalDefault: false
+

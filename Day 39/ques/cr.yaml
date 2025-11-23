@@ -1,0 +1,9 @@
+apiVersion: apps.projects.com/v1
+kind: AppConfig
+metadata:
+  labels:
+    run: app-cm
+  name: app-cm
+spec:
+  color: green
+  size: 100cm
